@@ -8,5 +8,4 @@ contract Hospital{
      uint failureCheckup;
      string experise;
 }
-
 }

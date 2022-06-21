@@ -9,6 +9,7 @@ contract Collector{
  }
 mapping(string=>detailsForRegistration) records;
 mapping(string=>bool) validate;
+
 function addHospital(string memory n,string memory exp) public{
     bool check=validate[n];
     require(!check,"sorry this hospital is already register");
