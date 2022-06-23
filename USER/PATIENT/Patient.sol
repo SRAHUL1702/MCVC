@@ -1,5 +1,11 @@
 pragma solidity >^0.4.24;
 
-contract xyz{
- 
+contract Patient{
+    struct PatientDetails{
+        string name;
+        bytes age;
+        string pincode;
+        string diseaseType;
+        string oldDetails;
+    }
 }
