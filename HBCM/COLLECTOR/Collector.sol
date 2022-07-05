@@ -4,10 +4,15 @@ address owner;
 uint totalHospitals;
 uint totalpatient;
 uint totoalBCM;
-
-constructor() public{
-    owner=msg.sender;
+address Manager;
+uint totalRecord;
+address sender;
+constructor(address _manager,address _sender,address _owner) public{
+    owner=_owner;
     totalUser=0;
+    Manager=_manager;
+    totalRecord=0;
+    sender=_sender;
 }
 
 function callKeccak256(string memory adhar) public pure returns(bytes32 result){
@@ -27,7 +32,8 @@ struct detailsForRegistration{
 mapping(bytes32=>detailsForRegistration) HospitalRecords;
 mapping(bytes32=>bool) validateHospital;
 
-function addHospital(string memory n,string memory exp) public onlyCollector{
+function addHospital(string memory str,string memory exp) public onlyCollector{
+    bytes32 n=callKeccak256(str);
     bool check=validateHospital[n];
     require(!check,"sorry this hospital is already registered");
     detailsForRegistration storage details=HospitalRecords[n];
@@ -38,7 +44,7 @@ function addHospital(string memory n,string memory exp) public onlyCollector{
     validateHospital[n]=true;
     }
 
-    struct PatientDetails{
+struct PatientDetails{
         string name;
         bytes age;
         string pincode;
