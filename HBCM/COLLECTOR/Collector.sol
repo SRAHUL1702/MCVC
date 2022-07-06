@@ -7,12 +7,16 @@ uint totoalBCM;
 address Manager;
 uint totalRecord;
 address sender;
+uint patientRequestNo;
+uint patientApproveNo;
 constructor(address _manager,address _sender,address _owner) public{
     owner=_owner;
     totalUser=0;
     Manager=_manager;
     totalRecord=0;
     sender=_sender;
+    patientApproveNo=0;
+    patientRequestNo=0;
 }
 
 function callKeccak256(string memory adhar) public pure returns(bytes32 result){
@@ -51,7 +55,7 @@ struct PatientDetails{
         string diseaseType;
         bytes32 oldDetails;
     }
-
+mapping(bytes=>uint) totalReport;
 mapping(bytes32=>PatientDetails) usersRecords;
 mapping(bytes32=>bool) isPatient;
 functions addNewPatient(string memory uname,string memory adhar,bytes a,string memory pin,string memory diseases,string memory olddetail) public onlyCollector{
@@ -63,6 +67,7 @@ functions addNewPatient(string memory uname,string memory adhar,bytes a,string m
     details.age=a;
     details.diseaseType=diseases;
     details.oldDetails=0;
+    totalReport[hashValue]=0;
     isPatient[hashValue]=true;
     totalUser+=1;
 }
