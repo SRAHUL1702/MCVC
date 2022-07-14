@@ -1,15 +1,18 @@
-pragma solidity >^0.4.24;
+// SPDX-License-Identifier: MIT
+pragma solidity >0.4.0;
 contract Collector{
-address owner;
-uint totalHospitals;
-uint totalpatient;
-uint totoalBCM;
-address Manager;
-uint totalRecord;
-address sender;
-uint patientRequestNo;
-uint patientApproveNo;
-constructor(address _manager,address _sender,address _owner) public{
+address public owner;
+uint public totalHospitals;
+uint public totalpatient;
+uint public totoalBCM;
+address public Manager;
+uint public totalRecord;
+address public sender;
+uint public patientRequestNo;
+uint public patientApproveNo;
+uint public totalUser;
+
+constructor(address _manager,address _sender,address _owner){
     owner=_owner;
     totalUser=0;
     Manager=_manager;
@@ -18,15 +21,14 @@ constructor(address _manager,address _sender,address _owner) public{
     patientApproveNo=0;
     patientRequestNo=0;
 }
-
-function callKeccak256(string memory adhar) public pure returns(bytes32 result){
-      return keccak256(name);
+function callKeccak256(string memory _str) public pure returns(bytes32) {
+        return keccak256(abi.encodePacked(_str));
    }  
-
 modifier onlyCollector(){
-    if(msg.sender!=owner) throw;
-    _
-}
+    require(msg.sender==owner,"you are not owner");
+    _;
+    }
+
 struct detailsForRegistration{
      string name;
      uint successfulCheckup;
@@ -41,24 +43,39 @@ function addHospital(string memory str,string memory exp) public onlyCollector{
     bool check=validateHospital[n];
     require(!check,"sorry this hospital is already registered");
     detailsForRegistration storage details=HospitalRecords[n];
-    details.name=n;
+    details.name=str;
     details.successfulCheckup=0;
     details.failureCheckup=0;
     details.expertise=exp; 
     validateHospital[n]=true;
     }
 
+struct BCM{
+    address id;
+    uint state;
+}
+mapping(address=>bool) isBCM;
+mapping(uint=>mapping(address=>BCM)) BcmDetails;
+function addBCM(address bcm,uint pin) public onlyCollector{
+    require(!isBCM[bcm],"ID EXIT");
+    BCM storage details=BcmDetails[pin][bcm];
+    details.id=bcm;
+    details.state=pin;
+    isBCM[bcm]=true;
+}
 struct PatientDetails{
         string name;
-        bytes age;
+        bytes4 age;
         string pincode;
         string diseaseType;
         bytes32 oldDetails;
     }
-mapping(bytes=>uint) totalReport;
+
+mapping(bytes32=>uint) totalReport;
 mapping(bytes32=>PatientDetails) usersRecords;
 mapping(bytes32=>bool) isPatient;
-functions addNewPatient(string memory uname,string memory adhar,bytes a,string memory pin,string memory diseases,string memory olddetail) public onlyCollector{
+
+function addNewPatient(string memory uname,string memory adhar,bytes4 a,string memory pin,string memory diseases) public onlyCollector{
     bytes32 hashValue=callKeccak256(adhar);
     require(isPatient[hashValue],"Already registered");
     PatientDetails storage details=usersRecords[hashValue];
@@ -72,19 +89,23 @@ functions addNewPatient(string memory uname,string memory adhar,bytes a,string m
     totalUser+=1;
 }
 
-struct BCM{
-    address id;
-    uint state;
+struct transaction{
+    string id;
+    string disease;
 }
-mapping(address=>bool) isBCM;
-mapping(uint=>mapping(address=>BCM)) BcmDetails;
-function addBCM(address bcm,uint pin) public onlyCollector{
-    require(!isBCM(bcm),"ID EXIT");
-    mapping(address=>BCM) temp=BcmDetails(pin);
-    BCM storage details=temp(bcm);
-    details.id=bcm;
-    details.state=pin;
-    BcmDetails[pin]=temp;
-    isBCM[bcm]=true;
+uint trNo;
+uint executedTrNo;
+
+uint blocksize=5;
+
+mapping(uint=>transaction) transactionCollection;
+
+function data_to_collecter(string memory user_id, string memory _disease) public {
+    bytes32 check=callKeccak256(user_id);
+    require(validateHospital[check],"you are not hospital"); 
+    transactionCollection[trNo]=transaction(user_id,_disease);
+    trNo++;
+
 }
+
 }
