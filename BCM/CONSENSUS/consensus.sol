@@ -1,39 +1,92 @@
-pragma solidity >^0.4.24;
+// SPDX-License-Identifier: MIT
+pragma solidity >0.4.0;
+contract Collector{
+address public owner;
+uint public totalHospitals;
+uint public totalpatient;
+uint public totoalBCM;
+address public Manager;
+uint public totalRecord;
+address public sender;
+uint public patientRequestNo;
+uint public patientApproveNo;
+uint public totalUser;
 
-contract Consensus{
- function consesusPBFT(bytes32 arr[]) external return(bytes32){
-    int c=0;
-    mapping(uint=>bytes32) validate;
-    mapping(bytes32=>uint) totalCount;
-    mapping(bytes32=>bool) isPresent;
-    for(int i=0;i<arr.length;i++){
-        bytes32 hash_Value=arr[i];
-        bool check=isPresent[hash_Value];
-        if(check){
-            uint count=totalCount[hash_Value];
-            count+=1;
-            totalCount[hash_Value]=c;
-        }
-        else{
-            isPresent[hash_Value]=true;
-            totalCount[hash_Value]=1;
-            validate[c]=hash_Value;
-            c++;
-        }
+constructor(address _manager,address _sender,address _owner){
+    owner=_owner;
+    totalUser=0;
+    Manager=_manager;
+    totalRecord=0;
+    sender=_sender;
+    patientApproveNo=0;
+    patientRequestNo=0;
+}
+function callKeccak256(string memory _str) public pure returns(bytes32) {
+        return keccak256(abi.encodePacked(_str));
+   }  
+modifier onlyCollector(){
+    require(msg.sender==owner,"you are not owner");
+    _;
     }
-    uint max=0;
-    bytes32 res=-1;
-    for(uint i=0;i<c;i++){
-        bytes32 hash_Value=validate[i];
-        uint count=totalCount[hash_Value];
-        if(max<count){
-            res=hash_Value;
-            max=count;
-        }
+
+struct detailsForRegistration{
+     string name;
+     uint successfulCheckup;
+     uint failureCheckup;
+     string expertise;
+}
+mapping(bytes32=>detailsForRegistration) HospitalRecords;
+mapping(bytes32=>bool) validateHospital;
+
+function addHospital(string memory str,string memory exp) public onlyCollector{
+    bytes32 n=callKeccak256(str);
+    bool check=validateHospital[n];
+    require(!check,"sorry this hospital is already registered");
+    detailsForRegistration storage details=HospitalRecords[n];
+    details.name=str;
+    details.successfulCheckup=0;
+    details.failureCheckup=0;
+    details.expertise=exp; 
+    validateHospital[n]=true;
     }
-    uint v=(arr.length*2)/3;
-    if(max>v)
-        return res;
-    return -1;
+
+struct BCM{
+    address id;
+    uint state;
+}
+mapping(address=>bool) isBCM;
+mapping(uint=>mapping(address=>BCM)) BcmDetails;
+function addBCM(address bcm,uint pin) public onlyCollector{
+    require(!isBCM[bcm],"ID EXIT");
+    BCM storage details=BcmDetails[pin][bcm];
+    details.id=bcm;
+    details.state=pin;
+    isBCM[bcm]=true;
+}
+struct PatientDetails{
+        string name;
+        bytes4 age;
+        string pincode;
+        string diseaseType;
+        bytes32 oldDetails;
     }
+    
+mapping(bytes32=>uint) totalReport;
+mapping(bytes32=>PatientDetails) usersRecords;
+mapping(bytes32=>bool) isPatient;
+
+function addNewPatient(string memory uname,string memory adhar,bytes4 a,string memory pin,string memory diseases) public onlyCollector{
+    bytes32 hashValue=callKeccak256(adhar);
+    require(isPatient[hashValue],"Already registered");
+    PatientDetails storage details=usersRecords[hashValue];
+    details.name=uname;
+    details.pincode=pin;
+    details.age=a;
+    details.diseaseType=diseases;
+    details.oldDetails=0;
+    totalReport[hashValue]=0;
+    isPatient[hashValue]=true;
+    totalUser+=1;
+}
+
 }
