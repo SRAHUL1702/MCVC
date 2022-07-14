@@ -5,9 +5,10 @@ contract Patient is Collector,Manager{
     modifier onlyPatitent(string memory adhar){
         bytes32 validate=callKeccak256(adhar);
         require(isPatient[validate],"sry you are not user");
+        _;
     }
    event userMsg(string res);
-   event userReportEvent(string diseases,);
+   event userReportEvent();
     function requestReport(string memory adhar) public onlyPatient(adhar){
         bytes32 id=callKeccak256(adhar);
         require(!userStatus[id],"Already Requested");
@@ -16,6 +17,7 @@ contract Patient is Collector,Manager{
         userStatus[id]=true;
         emit userMsg("successFul done");
     }
+
     function checkReport(string memory adhar) public onlyPatient(adhar){
         bytes32 id=callKeccak256(adhar);
         require(!userStatus[id],"in queue wait for approval");

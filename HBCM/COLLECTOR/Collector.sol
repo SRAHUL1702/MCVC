@@ -90,19 +90,17 @@ function addNewPatient(string memory uname,string memory adhar,bytes4 a,string m
 }
 
 struct transaction{
-    string id;
+    bytes32 id;
     string disease;
 }
 uint trNo;
 uint executedTrNo;
 
-uint blocksize=5;
+uint public blocksize=5;
 
 mapping(uint=>transaction) transactionCollection;
 
-function data_to_collecter(string memory user_id, string memory _disease) public {
-    bytes32 check=callKeccak256(user_id);
-    require(validateHospital[check],"you are not hospital"); 
+function data_to_collecter(bytes32 user_id, string memory _disease) public {
     transactionCollection[trNo]=transaction(user_id,_disease);
     trNo++;
 

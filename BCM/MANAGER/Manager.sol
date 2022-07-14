@@ -2,21 +2,30 @@ pragma solidity >^0.4.24;
 import "../../HBCM/COLLECTOR/Sender.sol"
 import "../../HBCM/COLLECTOR/Collector.sol"
 import "../CONSENSUS/consensus.sol";
-contract Manager is Sender,Consensus,Collector{
+contract Manager is Consensus,Collector{
     modifier onlyManager(){
-        require(msg.sender==manager,"Only Manager can access");
+        require(isBCM[msg.sender],"Only Manager can access");
+        _;
     }
-    event approvePatientEvent(String msg);
+    event approvePatientEvent(string msg);
     mapping(uint=>bytes32) userRequest;
     mapping(bytes32=>bool) userStatus;
-    struct patientMediacalRecord{
-
+    struct patientMedicalRecord{
+            string disease;
+            string report;
+            bytes4 age;
     }
-    mapping(bytes32=>mapping(uint=>patientMediacalRecord)) record;
-    mapping(bytes32=>patientMediacalRecord) forUser;
-    function add patientRecord() public onlyManager{
+   mapping(bytes32=>mapping(uint=>patientMedicalRecord)) record;
+   mapping(bytes32=>patientMedicalRecord) forUser;
 
+    function addatientRecord(string memory adhar,string memory _disease,string memory _report,bytes4 _age) public onlyManager{
+            bytes32 id=callKeccak256(adhar);
+            patientMedicalRecord storage detail=record[id][totalReport[id]+1];
+            detail.disease=_disease;
+            detail.report=_report;
+            detail.age=_age;
     }
+
     function approvaPatientStatus() public onlyManager{
         if(patientApproveNo==patientRequestNo){
             patientApproveNo=0;
@@ -34,5 +43,37 @@ contract Manager is Sender,Consensus,Collector{
             emit approvaPatientStatus("successFul Approve");
         }
     }
+    function gethashFromBCM()public onlyManager returns(bytes32) {
+            int currTransactionNo=executedTrNo;
+            transaction storage updatingInfo = transactionCollection[currTransactionNo];
+            string memory str_id=updatingInfo.id;
+            string memory str_disease=updatingInfo.disease;
+            bytes32 hash1=keccak256(abi.encode(str_id, str_disease));
+            return hash1;
+    }
+
+event giveResponseToTrNo(uint executedTrNo);
+
+function mineBlock()public onlyCollector{
+       if(trNo>=executedTrNo+blocksize){
+      for(int i=0;i<blocksize;i++){
+          emit giveResponseToTrNo(executedTrNo);
+            bytes32 [10]responses;
+            for(int resno=0;resno<10;resno++){
+                
+               responses[resno] = gethashFromBCM();
+            }
+            bytes32 val = consesusPBFT(responses);
+            if(val==-1){
+
+            }else{
+                //data update
+            }
+            executedTrNo++;
+      }
+      trNo=trNo-blocksize;
+    }
+}  
+
     
 }
